@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +21,10 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 |--------------------------------------------------------------------------
 */
 
-// Trang chủ: hiển thị danh sách sản phẩm công khai
+// Trang chủ (public)
 Route::get('/', [ProductController::class, 'index'])->name('home');
 
-// Public: user chỉ được xem
+// Public: duyệt sản phẩm & danh mục
 Route::resource('products', ProductController::class)->only(['index', 'show']);
 Route::resource('categories', CategoryController::class)->only(['index', 'show']);
 
@@ -50,7 +51,7 @@ Route::post('/email/verification-notification', function (Request $request) {
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // ---------------- USER ROUTES ----------------
-// Yêu cầu user phải login + verify email mới dùng được
+// Yêu cầu user login + verify email
 Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
     // Giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -62,24 +63,24 @@ Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(fu
     // Thanh toán (OrderController xử lý cả COD & MoMo)
     Route::get('/payment', [OrderController::class, 'index'])->name('payment.index');
     Route::post('/payment/process', [OrderController::class, 'processPayment'])->name('payment.process');
-    // Thanh toán lại MoMo cho một đơn đã tạo
+
+    // Trang thông báo thành công (đang được CartController gọi)
+    Route::get('/payment/success/{orderId}', [CartController::class, 'success'])->name('payment.success');
+
+    // MoMo
     Route::get('/orders/{order}/pay/momo', [OrderController::class, 'payAgain'])->name('orders.momo.pay');
-    // Tạo request thanh toán MoMo
     Route::post('/payment/momo', [OrderController::class, 'momo_payment'])->name('payment.momo');
-    // Callback: user được MoMo redirect về sau khi thanh toán
     Route::get('/payment/momo/callback', [OrderController::class, 'callback'])->name('payment.momo.callback');
-    // IPN: MoMo gọi server-to-server → cập nhật trạng thái đơn
     Route::post('/payment/momo/ipn', [OrderController::class, 'ipn'])->name('payment.momo.ipn');
 
-    // Lịch sử đơn hàng và xem chi tiết
+    // Đơn hàng
     Route::get('/orders', [OrderController::class, 'orderHistory'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Debug MoMo (chỉ trong môi trường local)
+    // Debug MoMo (chỉ môi trường local)
     if (app()->environment('local')) {
         Route::get('/debug/momo', [OrderController::class, 'debugMoMo'])->name('debug.momo');
 
-        // Test MoMo connection
         Route::get('/test/momo', function () {
             try {
                 $config = [
@@ -109,6 +110,12 @@ Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(fu
     }
 });
 
+// ĐÁNH GIÁ SẢN PHẨM (giữ URL /user/... nhưng đặt name NGẮN không có tiền tố 'user.')
+Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])
+        ->name('products.reviews.store');
+});
+
 // ---------------- ADMIN ROUTES ----------------
 Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
@@ -130,13 +137,24 @@ Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.'
     Route::put('/products/{product}', [AdminController::class, 'updateProduct'])->name('products.update');
     Route::delete('/products/{product}', [AdminController::class, 'deleteProduct'])->name('products.destroy');
 
-    // Route quản lý tài khoản
+    // Đơn hàng (resource)
     Route::resource('orders', AdminOrderController::class);
+    
+    // Cập nhật trạng thái thanh toán
+    Route::patch('/orders/{order}/payment-status', [AdminOrderController::class, 'updatePaymentStatus'])
+        ->name('orders.payment-status.update');
 
-    // Route quản lý báo cáo
+    // Báo cáo
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/charts', [ReportController::class, 'charts'])->name('reports.charts');
 
-    // Route quản lý người dùng
+    // Người dùng
     Route::resource('users', AdminUserController::class);
+
+    // Quản lý đánh giá
+    Route::get('/reviews', [App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
+    Route::get('/reviews/{review}', [App\Http\Controllers\Admin\ReviewController::class, 'show'])->name('reviews.show');
+    Route::post('/reviews/{review}/reply', [App\Http\Controllers\Admin\ReviewController::class, 'reply'])->name('reviews.reply');
+    Route::patch('/reviews/{review}/mark-read', [App\Http\Controllers\Admin\ReviewController::class, 'markAsRead'])->name('reviews.mark-read');
+    Route::delete('/reviews/{review}', [App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
 });

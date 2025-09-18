@@ -9,6 +9,7 @@ use App\Models\Orders;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
+use App\Models\Review;
 
 class AdminController extends Controller
 {
@@ -32,7 +33,10 @@ class AdminController extends Controller
         $paidStatuses = ['đã thanh toán', 'đã đặt (COD)', 'chờ xử lý'];
         $totalRevenue = Orders::whereIn('status', $paidStatuses)->sum('total_price');
         $paidOrders = Orders::whereIn('status', $paidStatuses)->count();
-        
+
+        // Reviews unread count (admin chưa xem)
+        $unreadReviews = Review::whereNull('admin_seen_at')->count();
+
         // Đơn hàng gần đây (5 đơn mới nhất)
         $recentOrders = Orders::with('items.product')
             ->orderBy('created_at', 'desc')
@@ -67,7 +71,8 @@ class AdminController extends Controller
             'recentOrders',
             'topProducts',
             'monthlyRevenue',
-            'monthlyOrders'
+            'monthlyOrders',
+            'unreadReviews'
         ));
     }
 

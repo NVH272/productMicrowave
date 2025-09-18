@@ -71,4 +71,9 @@ class Product extends Model
     {
         return $this->hasMany(OrderItems::class, 'product_id');
     }
+    // Quan hệ với Review
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

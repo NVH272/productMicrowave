@@ -62,18 +62,32 @@ class OrderController extends Controller
         // Nếu là AJAX request chỉ cập nhật shipping_status
         if ($request->ajax() || $request->has('shipping_status')) {
             $request->validate([
-                'shipping_status' => 'required|in:pending,packaged,shipping,completed,cancelled'
+                'shipping_status' => 'required|in:pending,packaged,shipping,đã giao,cancelled'
             ]);
 
+            $oldShippingStatus = $order->shipping_status;
             $order->update([
                 'shipping_status' => $request->shipping_status
             ]);
+
+            // Logic COD: Nếu đơn hàng COD và trạng thái giao hàng chuyển thành 'đã giao' thì tự động cập nhật payment_status thành 'paid'
+            if ($order->payment_method === 'cod' && 
+                $oldShippingStatus !== 'đã giao' && 
+                $request->shipping_status === 'đã giao' && 
+                $order->payment_status === 'pending') {
+                
+                $order->update([
+                    'payment_status' => 'paid',
+                    'paid_at' => now()
+                ]);
+            }
 
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Cập nhật trạng thái giao hàng thành công!',
-                    'shipping_status' => $order->shipping_status
+                    'shipping_status' => $order->shipping_status,
+                    'payment_status' => $order->payment_status
                 ]);
             }
 
@@ -88,13 +102,37 @@ class OrderController extends Controller
             'total_price' => 'required|numeric|min:0',
             'status' => 'required|string',
             'payment_method' => 'required|string',
-            'shipping_status' => 'nullable|in:pending,packaged,shipping,completed,cancelled',
+            'shipping_status' => 'nullable|in:pending,packaged,shipping,đã giao,cancelled',
             'note' => 'nullable|string|max:500'
         ]);
 
         $order->update($validated);
 
         return redirect()->route('admin.orders.index')->with('success', 'Cập nhật đơn hàng thành công!');
+    }
+
+    public function updatePaymentStatus(Request $request, $id)
+    {
+        $order = Orders::findOrFail($id);
+        
+        $request->validate([
+            'payment_status' => 'required|in:pending,paid,failed,cancelled'
+        ]);
+
+        $order->update([
+            'payment_status' => $request->payment_status,
+            'paid_at' => $request->payment_status === 'paid' ? now() : null
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thanh toán thành công!',
+                'payment_status' => $order->payment_status
+            ]);
+        }
+
+        return redirect()->route('admin.orders.index')->with('success', 'Cập nhật trạng thái thanh toán thành công!');
     }
 
     public function destroy($id)

@@ -31,6 +31,15 @@
                 <!-- Thông tin sản phẩm -->
                 <div class="col-md-7">
                     <h3 class="fw-bold">{{ $product->name }}</h3>
+                    @php
+                        $avg = round($product->reviews->avg('rating') ?? 0, 1);
+                        $count = $product->reviews->count();
+                    @endphp
+                    <div class="mb-2">
+                        <span class="me-2">Đánh giá trung bình:</span>
+                        <strong class="text-warning">{{ $avg }} / 5</strong>
+                        <span class="text-muted">({{ $count }} đánh giá)</span>
+                    </div>
                     <p class="text-muted mb-1">Thương hiệu: {{ $product->brand ?? 'N/A' }}</p>
                     <p class="text-muted mb-1">Model: {{ $product->model ?? 'N/A' }}</p>
 
@@ -71,6 +80,37 @@
                         Vui lòng <a href="{{ route('login') }}" class="fw-bold">đăng nhập</a> để thêm sản phẩm vào giỏ hàng.
                     </div>
                     @endauth
+                    <hr>
+                    <!-- <h3>Đánh giá sản phẩm</h3> -->
+
+                    <!-- @auth
+                    <div class="alert alert-info">
+                        Chỉ khách đã mua và nhận hàng thành công mới có thể đánh giá.
+                        Hãy vào phần <a href="{{ route('user.orders.index') }}">Lịch sử đơn hàng</a> để đánh giá.
+                    </div>
+                    @endauth -->
+
+                    <h4>Danh sách đánh giá:</h4>
+                    @foreach($product->reviews as $review)
+                    <div class="review border p-2 my-2">
+                        <strong>{{ $review->user->name }}</strong> - {{ $review->rating }}⭐
+                        <p>{{ $review->comment }}</p>
+                        @if($review->admin_reply)
+                        <div class="bg-light p-2 border rounded">
+                            <strong>Phản hồi từ Admin:</strong>
+                            <div>{{ $review->admin_reply }}</div>
+                        </div>
+                        @elseif(auth()->check() && auth()->user()->isAdmin())
+                        <form method="POST" action="{{ route('admin.reviews.reply', $review) }}" class="mt-2">
+                            @csrf
+                            <div class="mb-2">
+                                <textarea name="admin_reply" class="form-control" rows="2" placeholder="Nhập phản hồi của admin..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Gửi phản hồi</button>
+                        </form>
+                        @endif
+                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>

@@ -302,6 +302,11 @@
                 Đơn hàng
             </a>
             
+            <a class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}" href="{{ route('admin.reviews.index') }}">
+                <i class="fas fa-star"></i>
+                Đánh giá
+            </a>
+
             <a class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                 <i class="fas fa-users"></i>
                 Người dùng
@@ -347,20 +352,7 @@
 
     <!-- Content Wrapper -->
     <div class="content-wrapper">
-        <!-- Topbar -->
-        <nav class="topbar d-flex align-items-center px-3">
-            <a class="topbar-brand" href="{{ route('admin.dashboard') }}">
-                <i class="fas fa-tachometer-alt"></i>
-                Admin Dashboard
-            </a>
-            
-            <div class="ms-auto">
-                <span class="text-muted">
-                    <i class="fas fa-user"></i>
-                    {{ Auth::user()->name ?? 'Admin' }}
-                </span>
-            </div>
-        </nav>
+        <!-- Topbar removed for simplified layout -->
 
         <!-- Main Content -->
         <div class="main-content">

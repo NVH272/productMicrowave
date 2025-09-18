@@ -246,7 +246,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="stat-label">Đã hoàn thành</div>
-                        <div class="stat-number">{{ $orders->where('shipping_status', 'completed')->count() }}</div>
+                        <div class="stat-number">{{ $orders->where('shipping_status', 'đã giao')->count() }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-check-circle stat-icon"></i>
@@ -332,15 +332,34 @@
                             </td>
                             <td>
                                 @php
-                                $statusClass = match($order->status) {
-                                'đã thanh toán' => 'success',
-                                'đã đặt (COD)' => 'info',
-                                'chờ xử lý' => 'warning',
-                                'hủy' => 'danger',
+                                $statusClass = match($order->payment_status) {
+                                'paid' => 'success',
+                                'pending' => 'warning',
+                                'failed' => 'danger',
+                                'cancelled' => 'secondary',
                                 default => 'secondary'
                                 };
                                 @endphp
-                                <span class="badge badge-{{ $statusClass }}">{{ $order->status }}</span>
+                                <form action="{{ route('admin.orders.payment-status.update', $order->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="payment_status"
+                                        class="form-control form-control-sm shipping-status-select"
+                                        onchange="updatePaymentStatus(this, '{{ $order->id }}')">
+                                        <option value="pending" {{ $order->payment_status == 'pending' ? 'selected' : '' }}>
+                                            ⏳ Chờ thanh toán
+                                        </option>
+                                        <option value="paid" {{ $order->payment_status == 'paid' ? 'selected' : '' }}>
+                                            ✅ Đã thanh toán
+                                        </option>
+                                        <option value="failed" {{ $order->payment_status == 'failed' ? 'selected' : '' }}>
+                                            ❌ Thất bại
+                                        </option>
+                                        <option value="cancelled" {{ $order->payment_status == 'cancelled' ? 'selected' : '' }}>
+                                            🚫 Hủy
+                                        </option>
+                                    </select>
+                                </form>
                             </td>
                             <td>
                                 <form action="{{ route('admin.orders.update', $order->id) }}" method="POST" class="d-inline">
@@ -359,8 +378,8 @@
                                         <option value="shipping" {{ $order->shipping_status == 'shipping' ? 'selected' : '' }}>
                                             🚚 Đang vận chuyển
                                         </option>
-                                        <option value="completed" {{ $order->shipping_status == 'completed' ? 'selected' : '' }}>
-                                            ✅ Thành công
+                                        <option value="đã giao" {{ $order->shipping_status == 'đã giao' ? 'selected' : '' }}>
+                                            ✅ Đã giao hàng
                                         </option>
                                         <option value="cancelled" {{ $order->shipping_status == 'cancelled' ? 'selected' : '' }}>
                                             ❌ Hủy
@@ -463,6 +482,51 @@
 
                 // Hiển thị thông báo lỗi
                 showNotification('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
+
+                // Khôi phục giá trị cũ
+                selectElement.value = selectElement.dataset.oldValue;
+            });
+    }
+
+    function updatePaymentStatus(selectElement, orderId) {
+        // Hiển thị loading
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        // Lấy form chứa select
+        const form = selectElement.closest('form');
+
+        // Tạo FormData
+        const formData = new FormData(form);
+
+        // Gửi request AJAX
+        fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Ẩn loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                if (data.success) {
+                    // Hiển thị thông báo thành công
+                    showNotification('Cập nhật trạng thái thanh toán thành công!', 'success');
+                } else {
+                    // Hiển thị thông báo lỗi
+                    showNotification('Có lỗi xảy ra khi cập nhật trạng thái thanh toán!', 'error');
+                    // Khôi phục giá trị cũ
+                    selectElement.value = selectElement.dataset.oldValue;
+                }
+            })
+            .catch(error => {
+                // Ẩn loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                // Hiển thị thông báo lỗi
+                showNotification('Có lỗi xảy ra khi cập nhật trạng thái thanh toán!', 'error');
 
                 // Khôi phục giá trị cũ
                 selectElement.value = selectElement.dataset.oldValue;

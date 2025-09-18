@@ -28,7 +28,7 @@ class OrderController extends Controller
             'timeout' => config('momo.timeout', 30),
         ];
     }
-    
+
     // giới hạn thao tác: nếu có sản phẩm => truyền đến trang checkout, nếu không có => ở lại giỏ hàng
     public function index()
     {
@@ -38,7 +38,7 @@ class OrderController extends Controller
         }
         return view('user.payment.index', compact('cart'));
     }
-    
+
     // nhận thao tác thanh toán từ form rồi điều hướng kết quả momo hay COD
     public function processPayment(Request $request)
     {
@@ -49,16 +49,16 @@ class OrderController extends Controller
             'total_price' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cod,momo,bank',
         ]);
-        
+
         $cart = session('cart', []);
         if (empty($cart)) {
             return redirect()->route('user.cart.index')
                 ->with('error', 'Không thể thanh toán vì giỏ hàng trống.');
         }
-        
+
         // Tính tổng tiền
         $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-        
+
         // Tạo đơn hàng với trạng thái thanh toán mới
         $order = Orders::create([
             'user_id' => Auth::id(),
@@ -70,7 +70,7 @@ class OrderController extends Controller
             'payment_method' => $request->payment_method,
             'payment_status' => 'pending',
         ]);
-        
+
         // Lưu chi tiết đơn hàng
         foreach ($cart as $productId => $item) {
             OrderItems::create([
@@ -80,10 +80,10 @@ class OrderController extends Controller
                 'price' => $item['price'],
             ]);
         }
-        
+
         // ✅ XÓA GIỎ HÀNG NGAY KHI NHẤN THANH TOÁN (kể cả MoMo chưa thành công)
         session()->forget('cart');
-        
+
         // Rẽ nhánh phương thức thanh toán
         if ($request->payment_method === 'momo') {
             return $this->redirectToMoMo($order);
@@ -148,7 +148,7 @@ class OrderController extends Controller
     {
         // Lấy cấu hình MoMo
         $config = $this->getMoMoConfig();
-        
+
         $redirectUrl = route('user.payment.momo.callback');
         $ipnUrl = route('user.payment.momo.ipn');
         $orderId = time() . '_' . $order->id;
@@ -158,12 +158,12 @@ class OrderController extends Controller
         $amount = (string) max(1000, (int) $order->total_price); // test nên >= 1000
         $extraData = ''; // có thể base64_encode(json_encode(...))
         $requestType = 'payWithATM';
-        
+
         // Sửa lỗi: orderId bị lặp lại trong rawHash
         $rawHash = "accessKey={$config['access_key']}&amount={$amount}&extraData={$extraData}&ipnUrl={$ipnUrl}"
             . "&orderId={$orderId}&orderInfo={$orderInfo}&partnerCode={$config['partner_code']}"
             . "&redirectUrl={$redirectUrl}&requestId={$requestId}&requestType={$requestType}";
-        
+
         $signature = hash_hmac('sha256', $rawHash, $config['secret_key']);
         $payload = [
             'partnerCode' => $config['partner_code'],
@@ -180,43 +180,43 @@ class OrderController extends Controller
             'requestType' => $requestType,
             'signature' => $signature,
         ];
-        
+
         Log::info('MoMo request payload: ', $payload);
         Log::info('MoMo rawHash: ' . $rawHash);
         Log::info('MoMo signature: ' . $signature);
-        
+
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json; charset=UTF-8',
                 'Accept' => 'application/json'
             ])
-            ->timeout($config['timeout'])
-            ->withoutVerifying()
-            ->post($config['endpoint'], $payload);
-                
+                ->timeout($config['timeout'])
+                ->withoutVerifying()
+                ->post($config['endpoint'], $payload);
+
             Log::info('MoMo response status: ' . $response->status());
             Log::info('MoMo response body: ' . $response->body());
-            
+
             if (!$response->successful()) {
                 $errorBody = $response->body();
                 $errorJson = json_decode($errorBody, true);
                 $errorMessage = $errorJson['message'] ?? $errorJson['error'] ?? 'Lỗi không xác định';
-                
+
                 Log::error('MoMo create payment failed', [
                     'status' => $response->status(),
                     'body' => $errorBody,
                     'error_message' => $errorMessage,
                     'payload' => $payload
                 ]);
-                
+
                 return redirect()
                     ->route('user.orders.index')
                     ->with('error', "Không thể kết nối MoMo (HTTP {$response->status()}): {$errorMessage}");
             }
-            
+
             $json = $response->json();
             Log::info('MoMo response JSON:', $json);
-            
+
             if (!empty($json['payUrl'])) {
                 $order->update([
                     'transaction_id' => $requestId,
@@ -224,7 +224,7 @@ class OrderController extends Controller
                 ]);
                 return redirect()->away($json['payUrl']);
             }
-            
+
             // Không có payUrl → báo lỗi rõ
             $msg = $json['message'] ?? $json['error'] ?? 'MoMo không trả về payUrl.';
             Log::error('MoMo payUrl missing', ['response' => $json]);
@@ -249,7 +249,7 @@ class OrderController extends Controller
     public function callback(Request $request)
     {
         $resultCode = $request->input('resultCode'); // 0 = success
-        
+
         // Có orderId thì lấy id thực từ "time_orderId"
         $order = null;
         if ($request->filled('orderId')) {
@@ -257,7 +257,7 @@ class OrderController extends Controller
             $orderId = end($parts);
             $order = Orders::find($orderId);
         }
-        
+
         if ($resultCode === '0' || $resultCode === 0) {
             // ✅ Thành công: cập nhật trạng thái đơn hàng
             if ($order) {
@@ -271,7 +271,7 @@ class OrderController extends Controller
             return redirect()->route('user.orders.index')
                 ->with('success', 'Thanh toán MoMo thành công! Đơn hàng của bạn đã được xác nhận.');
         }
-        
+
         // ❌ Thất bại/hủy: cập nhật trạng thái
         if ($order) {
             $order->update([
@@ -279,7 +279,7 @@ class OrderController extends Controller
                 'payment_status' => 'failed'
             ]);
         }
-        
+
         // Quay lại trang đơn hàng để người dùng thử thanh toán lại
         return redirect()->route('user.orders.index')
             ->with('error', 'Thanh toán MoMo thất bại hoặc bị hủy. Vui lòng thử lại.');
@@ -291,7 +291,7 @@ class OrderController extends Controller
     public function ipn(Request $request)
     {
         Log::info('MoMo IPN payload:', $request->all());
-        
+
         // TODO: bạn nên xác thực chữ ký ở đây
         // Ví dụ cập nhật trạng thái dựa vào orderId/resultCode:
         if ($request->filled('orderId')) {
@@ -315,27 +315,27 @@ class OrderController extends Controller
         }
         return response()->json(['resultCode' => 0, 'message' => 'Received']);
     }
-    
+
     // Cho phép user kéo lại đơn chưa thanh toán đi MoMo lần nữa
     public function payAgain(Orders $order)
     {
         if ($order->user_id !== Auth::id()) {
             abort(403, 'Bạn không có quyền thanh toán lại đơn này.');
         }
-        
+
         if ($order->payment_status === 'paid') {
             return redirect()->route('user.orders.index')->with('info', 'Đơn này đã thanh toán.');
         }
-        
+
         // Đưa về "chờ thanh toán" trước khi tạo giao dịch mới
         $order->update([
             'status' => 'chờ thanh toán',
             'payment_status' => 'pending'
         ]);
-        
+
         return $this->redirectToMoMo($order);
     }
-    
+
     // gọi lịch sử các đơn hàng theo người dùng
     public function orderHistory()
     {
@@ -345,7 +345,7 @@ class OrderController extends Controller
             ->get();
         return view('user.payment.order', compact('orders'));
     }
-    
+
     // gọi chi tiết sản phẩm từng đơn hàng
     public function show(Orders $order)
     {
@@ -372,7 +372,7 @@ class OrderController extends Controller
         ]);
 
         $order = Orders::findOrFail($request->order_id);
-        
+
         if ($order->user_id !== Auth::id()) {
             abort(403, 'Bạn không có quyền thanh toán đơn này.');
         }
