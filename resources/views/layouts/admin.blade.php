@@ -6,16 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin Dashboard - NVH Store</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- Custom Admin Styles -->
     <style>
         :root {
@@ -230,11 +230,11 @@
             .sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .content-wrapper {
                 margin-left: 0;
             }
-            
+
             .main-content {
                 padding: 1rem;
             }
@@ -266,6 +266,44 @@
             color: var(--admin-primary);
             margin-bottom: 1rem;
         }
+
+        /* Sidebar cuộn theo trang */
+        .sidebar {
+            background: linear-gradient(180deg, var(--admin-primary) 10%, #224abe 100%);
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 224px;
+            z-index: 1000;
+            transition: all 0.3s;
+
+            /* thêm thuộc tính này */
+            overflow-y: auto;
+        }
+
+        /* Đảm bảo các nav-link có cùng độ rộng */
+        .nav-link {
+            display: block;
+            /* chiếm full chiều ngang */
+            width: 100%;
+            /* full width */
+            box-sizing: border-box;
+            /* tính padding trong width */
+            padding: 0.75rem 1rem;
+            /* chỉnh padding cho đều */
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        /* Hover và active phủ full */
+        .nav-link:hover,
+        .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.15);
+            /* nền hover/active */
+        }
     </style>
 </head>
 
@@ -276,32 +314,32 @@
             <i class="fas fa-tachometer-alt sidebar-brand-icon"></i>
             <div>Admin Panel</div>
         </a>
-        
+
         <hr class="sidebar-divider">
-        
+
         <div class="sidebar-heading">Quản lý</div>
-        
+
         <nav class="nav">
             <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                 <i class="fas fa-tachometer-alt"></i>
                 Dashboard
             </a>
-            
+
             <a class="nav-link {{ request()->routeIs('admin.categories*') ? 'active' : '' }}" href="{{ route('admin.categories') }}">
                 <i class="fas fa-tags"></i>
                 Danh mục
             </a>
-            
+
             <a class="nav-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}" href="{{ route('admin.products') }}">
                 <i class="fas fa-box"></i>
                 Sản phẩm
             </a>
-            
+
             <a class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">
                 <i class="fas fa-shopping-cart"></i>
                 Đơn hàng
             </a>
-            
+
             <a class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}" href="{{ route('admin.reviews.index') }}">
                 <i class="fas fa-star"></i>
                 Đánh giá
@@ -312,38 +350,38 @@
                 Người dùng
             </a>
         </nav>
-        
+
         <hr class="sidebar-divider">
-        
+
         <div class="sidebar-heading">Báo cáo</div>
-        
+
         <nav class="nav">
             <a class="nav-link {{ request()->routeIs('admin.reports.index') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
                 <i class="fas fa-chart-bar"></i>
                 Báo cáo tổng quan
             </a>
-            
+
             <a class="nav-link {{ request()->routeIs('admin.reports.charts') ? 'active' : '' }}" href="{{ route('admin.reports.charts') }}">
                 <i class="fas fa-chart-pie"></i>
                 Biểu đồ
             </a>
         </nav>
-        
+
         <hr class="sidebar-divider">
-        
+
         <div class="sidebar-heading">Hệ thống</div>
-        
+
         <nav class="nav">
             <a class="nav-link" href="{{ route('admin.dashboard') }}">
                 <i class="fas fa-cog"></i>
                 Cài đặt
             </a>
-            
+
             <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="fas fa-sign-out-alt"></i>
                 Đăng xuất
             </a>
-            
+
             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                 @csrf
             </form>
@@ -362,7 +400,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Custom Admin Scripts -->
     <script>
         // Auto-hide alerts after 5 seconds
@@ -388,7 +426,7 @@
         Chart.defaults.plugins.legend.labels.usePointStyle = true;
         Chart.defaults.plugins.legend.labels.padding = 20;
     </script>
-    
+
     @stack('scripts')
 </body>
 

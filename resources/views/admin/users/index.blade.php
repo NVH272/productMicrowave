@@ -1,5 +1,5 @@
 <!-- views/admin/users/index.blade.php -->
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('content')
 <div class="container">
     <h2 class="mb-4">Danh sách người dùng</h2>

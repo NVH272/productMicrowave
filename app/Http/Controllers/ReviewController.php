@@ -53,25 +53,4 @@ class ReviewController extends Controller
         return back()->with('success', 'Cảm ơn bạn đã đánh giá sản phẩm!');
     }
 
-    /**
-     * Admin trả lời đánh giá
-     */
-    public function reply(Request $request, Review $review)
-    {
-        // Chỉ admin mới được trả lời (middleware đã chặn, đây chỉ là phòng hờ)
-        if (!auth()->user() || !method_exists(auth()->user(), 'isAdmin') || !auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'admin_reply' => 'required|string|max:2000',
-        ]);
-
-        $review->admin_reply = $request->admin_reply;
-        $review->admin_id = auth()->id();
-        $review->replied_at = now();
-        $review->save();
-
-        return back()->with('success', 'Đã trả lời đánh giá.');
-    }
 }

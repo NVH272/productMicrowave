@@ -1,5 +1,5 @@
 <!-- views/admin/orders/index.blade.php -->
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
 <style>
@@ -344,7 +344,8 @@
                                     @csrf
                                     @method('PATCH')
                                     <select name="payment_status"
-                                        class="form-control form-control-sm shipping-status-select"
+                                        class="form-control form-control-sm shipping-status-select payment-status-select"
+                                        data-payment-select="{{ $order->id }}"
                                         onchange="updatePaymentStatus(this, '{{ $order->id }}')">
                                         <option value="pending" {{ $order->payment_status == 'pending' ? 'selected' : '' }}>
                                             ⏳ Chờ thanh toán
@@ -469,6 +470,13 @@
                 if (data.success) {
                     // Hiển thị thông báo thành công
                     showNotification('Cập nhật trạng thái giao hàng thành công!', 'success');
+                    // Nếu server trả về payment_status (ví dụ COD tự động chuyển paid), đồng bộ dropdown thanh toán
+                    if (data.payment_status) {
+                        const paymentSelect = document.querySelector(`select.payment-status-select[data-payment-select="${orderId}"]`);
+                        if (paymentSelect) {
+                            paymentSelect.value = data.payment_status;
+                        }
+                    }
                 } else {
                     // Hiển thị thông báo lỗi
                     showNotification('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
