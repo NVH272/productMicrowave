@@ -82,10 +82,21 @@
         box-shadow: var(--card-shadow-hover);
     }
 
-    .stat-card.success::before { background: var(--success-gradient); }
-    .stat-card.warning::before { background: var(--warning-gradient); }
-    .stat-card.info::before { background: var(--info-gradient); }
-    .stat-card.dark::before { background: var(--dark-gradient); }
+    .stat-card.success::before {
+        background: var(--success-gradient);
+    }
+
+    .stat-card.warning::before {
+        background: var(--warning-gradient);
+    }
+
+    .stat-card.info::before {
+        background: var(--info-gradient);
+    }
+
+    .stat-card.dark::before {
+        background: var(--dark-gradient);
+    }
 
     .stat-icon {
         width: 60px;
@@ -100,10 +111,21 @@
         background: var(--primary-gradient);
     }
 
-    .stat-card.success .stat-icon { background: var(--success-gradient); }
-    .stat-card.warning .stat-icon { background: var(--warning-gradient); }
-    .stat-card.info .stat-icon { background: var(--info-gradient); }
-    .stat-card.dark .stat-icon { background: var(--dark-gradient); }
+    .stat-card.success .stat-icon {
+        background: var(--success-gradient);
+    }
+
+    .stat-card.warning .stat-icon {
+        background: var(--warning-gradient);
+    }
+
+    .stat-card.info .stat-icon {
+        background: var(--info-gradient);
+    }
+
+    .stat-card.dark .stat-icon {
+        background: var(--dark-gradient);
+    }
 
     .stat-number {
         font-size: 2.5rem;
@@ -161,10 +183,21 @@
         height: 8px;
     }
 
-    .management-card.success::before { background: var(--success-gradient); }
-    .management-card.warning::before { background: var(--warning-gradient); }
-    .management-card.info::before { background: var(--info-gradient); }
-    .management-card.dark::before { background: var(--dark-gradient); }
+    .management-card.success::before {
+        background: var(--success-gradient);
+    }
+
+    .management-card.warning::before {
+        background: var(--warning-gradient);
+    }
+
+    .management-card.info::before {
+        background: var(--info-gradient);
+    }
+
+    .management-card.dark::before {
+        background: var(--dark-gradient);
+    }
 
     .management-icon {
         width: 70px;
@@ -179,10 +212,21 @@
         background: var(--primary-gradient);
     }
 
-    .management-card.success .management-icon { background: var(--success-gradient); }
-    .management-card.warning .management-icon { background: var(--warning-gradient); }
-    .management-card.info .management-icon { background: var(--info-gradient); }
-    .management-card.dark .management-icon { background: var(--dark-gradient); }
+    .management-card.success .management-icon {
+        background: var(--success-gradient);
+    }
+
+    .management-card.warning .management-icon {
+        background: var(--warning-gradient);
+    }
+
+    .management-card.info .management-icon {
+        background: var(--info-gradient);
+    }
+
+    .management-card.dark .management-icon {
+        background: var(--dark-gradient);
+    }
 
     .management-title {
         font-size: 1.3rem;
@@ -222,9 +266,17 @@
     }
 
     @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
     }
 
     .quick-actions {
@@ -269,20 +321,28 @@
         text-decoration: none;
     }
 
-    .action-btn.success { background: var(--success-gradient); }
-    .action-btn.warning { background: var(--warning-gradient); }
-    .action-btn.info { background: var(--info-gradient); }
+    .action-btn.success {
+        background: var(--success-gradient);
+    }
+
+    .action-btn.warning {
+        background: var(--warning-gradient);
+    }
+
+    .action-btn.info {
+        background: var(--info-gradient);
+    }
 
     @media (max-width: 768px) {
         .dashboard-container {
             margin: 10px;
             padding: 20px;
         }
-        
+
         .welcome-header h1 {
             font-size: 2rem;
         }
-        
+
         .stats-grid,
         .management-grid {
             grid-template-columns: 1fr;
@@ -292,46 +352,46 @@
 
 <div class="dashboard-container">
     <!-- Welcome Header -->
-    <div class="welcome-header">
+    <!-- <div class="welcome-header">
         <h1>🎯 Admin Dashboard</h1>
         <p>Chào mừng {{ Auth::user()->name ?? 'Admin' }}, đây là trang tổng quan hệ thống</p>
         <small>{{ now()->format('d/m/Y H:i') }}</small>
-    </div>
+    </div> -->
 
     <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <div class="stat-card success">
-            <div class="stat-icon">
-                <i class="fas fa-box"></i>
+    <!-- <div class="stats-grid">
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-number">{{ $totalProducts }}</div>
+                <div class="stat-label">Sản phẩm</div>
             </div>
-            <div class="stat-number">{{ $totalProducts }}</div>
-            <div class="stat-label">Sản phẩm</div>
-        </div>
-        
-        <div class="stat-card warning">
-            <div class="stat-icon">
-                <i class="fas fa-tags"></i>
+            
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-number">{{ $totalCategories }}</div>
+                <div class="stat-label">Danh mục</div>
             </div>
-            <div class="stat-number">{{ $totalCategories }}</div>
-            <div class="stat-label">Danh mục</div>
-        </div>
-        
-        <div class="stat-card info">
-            <div class="stat-icon">
-                <i class="fas fa-shopping-cart"></i>
+            
+            <div class="stat-card info">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-number">{{ $totalOrders }}</div>
+                <div class="stat-label">Đơn hàng</div>
             </div>
-            <div class="stat-number">{{ $totalOrders }}</div>
-            <div class="stat-label">Đơn hàng</div>
-        </div>
-        
-        <div class="stat-card dark">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
+            
+            <div class="stat-card dark">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number">{{ $totalUsers }}</div>
+                <div class="stat-label">Người dùng</div>
             </div>
-            <div class="stat-number">{{ $totalUsers }}</div>
-            <div class="stat-label">Người dùng</div>
-        </div>
-    </div>
+        </div> -->
 
     <!-- Management Cards -->
     <div class="management-grid">
@@ -343,7 +403,7 @@
             <div class="management-subtitle">Thêm, sửa, xóa danh mục sản phẩm</div>
             <div class="management-count">{{ $totalCategories }} danh mục</div>
         </a>
-        
+
         <a href="{{ route('admin.products') }}" class="management-card success">
             <div class="management-icon">
                 <i class="fas fa-box"></i>
@@ -352,7 +412,7 @@
             <div class="management-subtitle">Thêm, sửa, xóa sản phẩm</div>
             <div class="management-count">{{ $totalProducts }} sản phẩm</div>
         </a>
-        
+
         <a href="{{ route('admin.orders.index') }}" class="management-card info">
             <div class="management-icon">
                 <i class="fas fa-shopping-cart"></i>
@@ -361,7 +421,7 @@
             <div class="management-subtitle">Theo dõi và cập nhật trạng thái đơn hàng</div>
             <div class="management-count">{{ $totalOrders }} đơn hàng</div>
         </a>
-        
+
         <a href="{{ route('admin.users.index') }}" class="management-card dark">
             <div class="management-icon">
                 <i class="fas fa-users"></i>
@@ -370,7 +430,7 @@
             <div class="management-subtitle">Quản lý tài khoản khách hàng</div>
             <div class="management-count">{{ $totalUsers }} người dùng</div>
         </a>
-        
+
         <a href="{{ route('admin.reviews.index') }}" class="management-card warning">
             <div class="management-icon">
                 <i class="fas fa-star"></i>
@@ -382,7 +442,7 @@
             <div class="unread-badge">{{ $unreadReviews }}</div>
             @endif
         </a>
-        
+
         <a href="{{ route('admin.reports.index') }}" class="management-card success">
             <div class="management-icon">
                 <i class="fas fa-chart-bar"></i>

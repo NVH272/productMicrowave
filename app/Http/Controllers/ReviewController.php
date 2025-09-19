@@ -20,17 +20,16 @@ class ReviewController extends Controller
             'comment' => 'nullable|string|max:1000',
         ]);
 
-        // Kiểm tra user đã mua và đơn hàng đã giao + đã thanh toán
+        // Kiểm tra user đã mua và đơn hàng đã giao
         $hasBought = OrderItems::where('product_id', $product->id)
             ->whereHas('order', function ($q) {
                 $q->where('user_id', auth()->id())
-                    ->where('payment_status', 'paid')
                     ->where('shipping_status', 'đã giao');
             })
             ->exists();
 
         if (!$hasBought) {
-            return back()->with('error', 'Bạn chỉ có thể đánh giá sản phẩm đã mua và giao thành công.');
+            return back()->with('error', 'Bạn chỉ có thể đánh giá sản phẩm đã mua khi đơn hàng đã được giao.');
         }
 
         // Kiểm tra user đã từng đánh giá sản phẩm này chưa

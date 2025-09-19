@@ -427,6 +427,7 @@
         Chart.defaults.plugins.legend.labels.padding = 20;
     </script>
 
+    @stack('modals')
     @stack('scripts')
 </body>
 

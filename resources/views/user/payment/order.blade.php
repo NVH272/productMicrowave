@@ -106,7 +106,7 @@
                                                 <td class="text-end">{{ number_format($item->price, 0, ',', '.') }} đ</td>
                                                 <td class="text-end">{{ number_format($item->price * $item->quantity, 0, ',', '.') }} đ</td>
                                                 <td class="text-center">
-                                                    @if($order->payment_status === 'paid' && $order->shipping_status === 'đã giao' && $item->product)
+                                                    @if($order->shipping_status === 'đã giao' && $item->product)
                                                     @php
                                                     $reviewed = $item->product->reviews()
                                                     ->where('user_id', auth()->id())

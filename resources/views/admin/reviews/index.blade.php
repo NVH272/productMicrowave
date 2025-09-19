@@ -329,13 +329,13 @@
         </div>
     </div>
 
-    <!-- Reply Modal -->
-    <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1">
-        <div class="modal-dialog">
+    @push('modals')
+    <div class="modal fade" id="replyModal{{ $review->id }}" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Phản hồi đánh giá</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
                 <form action="{{ route('admin.reviews.reply', $review) }}" method="POST">
                     @csrf
@@ -353,8 +353,8 @@
                             <div class="form-control-plaintext">
                                 @for($i = 1; $i <= 5; $i++)
                                     <span class="star {{ $i <= $review->rating ? 'fas fa-star' : 'far fa-star' }}"></span>
-                                    @endfor
-                                    {{ $review->rating }}/5 sao
+                                @endfor
+                                {{ $review->rating }}/5 sao
                             </div>
                         </div>
                         @if($review->comment)
@@ -364,9 +364,8 @@
                         </div>
                         @endif
                         <div class="mb-3">
-                            <label for="admin_reply" class="form-label">Phản hồi của bạn:</label>
-                            <textarea name="admin_reply" id="admin_reply" class="form-control" rows="4"
-                                placeholder="Nhập phản hồi của bạn..." required></textarea>
+                            <label for="admin_reply_{{ $review->id }}" class="form-label">Phản hồi của bạn:</label>
+                            <textarea name="admin_reply" id="admin_reply_{{ $review->id }}" class="form-control" rows="4" placeholder="Nhập phản hồi của bạn..." required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -377,6 +376,7 @@
             </div>
         </div>
     </div>
+    @endpush
     @endforeach
 
     <!-- Pagination -->
@@ -393,3 +393,25 @@
 </div>
 
 @endsection
+
+@push('modals')
+<style>
+    /* Giữ form modals sáng, chỉ tối nền xung quanh */
+    .modal-backdrop.show {
+        opacity: .5; /* tối nền */
+    }
+
+    .modal-dialog {
+        pointer-events: auto;
+    }
+
+    .modal-content {
+        background-color: #fff; /* giữ sáng */
+        color: #212529;
+    }
+
+    /* đảm bảo modal nổi trên backdrop */
+    .modal { z-index: 1055; }
+    .modal-backdrop { z-index: 1050; }
+</style>
+@endpush

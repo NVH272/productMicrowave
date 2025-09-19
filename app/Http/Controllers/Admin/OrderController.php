@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Order; // ✅ thêm dòng này
+use App\Models\Order;
 use App\Models\Orders;
 use App\Models\OrderItems;
 
@@ -37,7 +37,7 @@ class OrderController extends Controller
         ]);
 
         $order = Orders::create($validated);
-        
+
         return redirect()->route('admin.orders.index')->with('success', 'Tạo đơn hàng thành công!');
     }
 
@@ -70,17 +70,7 @@ class OrderController extends Controller
                 'shipping_status' => $request->shipping_status
             ]);
 
-            // Logic COD: Nếu đơn hàng COD và trạng thái giao hàng chuyển thành 'đã giao' thì tự động cập nhật payment_status thành 'paid'
-            if ($order->payment_method === 'cod' && 
-                $oldShippingStatus !== 'đã giao' && 
-                $request->shipping_status === 'đã giao' && 
-                $order->payment_status === 'pending') {
-                
-                $order->update([
-                    'payment_status' => 'paid',
-                    'paid_at' => now()
-                ]);
-            }
+            // Không tự động cập nhật trạng thái thanh toán khi thay đổi trạng thái giao hàng
 
             if ($request->ajax()) {
                 return response()->json([
@@ -114,7 +104,7 @@ class OrderController extends Controller
     public function updatePaymentStatus(Request $request, $id)
     {
         $order = Orders::findOrFail($id);
-        
+
         $request->validate([
             'payment_status' => 'required|in:pending,paid,failed,cancelled'
         ]);
@@ -139,10 +129,10 @@ class OrderController extends Controller
     {
         // Xóa đơn hàng
         $order = Orders::findOrFail($id);
-        
+
         // Xóa các order items trước
         OrderItems::where('order_id', $id)->delete();
-        
+
         // Xóa đơn hàng
         $order->delete();
 
