@@ -44,7 +44,7 @@
                             <input type="password" class="form-control" name="password" required>
                         </div>
                         <button type="submit" class="btn w-100 text-white fw-bold"
-                            style="background: linear-gradient(135deg, #ff9a9e, #fad0c4); border: none; hover: background: rgb(248, 6, 14);">
+                            style="background: linear-gradient(135deg, #ff9a9e, #fad0c4); border: none;">
                             Đăng nhập
                         </button>
                     </form>

@@ -39,9 +39,7 @@ class AuthController extends Controller
         // Gửi email xác thực
         event(new Registered($user));
 
-        // ❌ KHÔNG login ở đây
-        Auth::login($user);
-
+        // Không login ngay, yêu cầu xác thực email trước
         return redirect()->route('verification.notice')
             ->with('success', 'Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.');
     }
@@ -75,12 +73,13 @@ class AuthController extends Controller
         }
 
         // Kiểm tra xác thực email (trừ admin)
-        if ($user->role !== 'admin' && !$user->hasVerifiedEmail()) {
+        if ($user->role !== 'admin' && is_null($user->email_verified_at)) {
             return back()->withErrors([
                 'email' => 'Tài khoản của bạn chưa được xác thực. 
-                    Vui lòng kiểm tra email: ' . e($user->email),
+            Vui lòng kiểm tra email: ' . e($user->email),
             ])->onlyInput('email');
         }
+
 
         // Nếu mọi thứ ok → login
         Auth::login($user);

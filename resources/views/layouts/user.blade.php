@@ -20,4 +20,11 @@
         </a>
     </div>
 </div>
+
+{{-- Nút chat nổi --}}
+<a href="{{ route('chat.index') }}"
+    class="btn btn-primary rounded-circle shadow-lg"
+    style="position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 1000;">
+    <i class="bi bi-chat-dots"></i>
+</a>
 @endsection

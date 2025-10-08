@@ -38,15 +38,15 @@
                                 <div class="d-flex align-items-center">
                                     <div class="me-3">
                                         @if(isset($item['image']))
-                                            <img src="{{ asset('uploads/products/' . $item['image']) }}" 
-                                                 alt="{{ $item['name'] }}" 
-                                                 class="img-thumbnail" 
-                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                        <img src="{{ asset('uploads/products/' . $item['image']) }}"
+                                            alt="{{ $item['name'] }}"
+                                            class="img-thumbnail"
+                                            style="width: 50px; height: 50px; object-fit: cover;">
                                         @else
-                                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" 
-                                                 style="width: 50px; height: 50px;">
-                                                <i class="fas fa-image"></i>
-                                            </div>
+                                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px;">
+                                            <i class="fas fa-image"></i>
+                                        </div>
                                         @endif
                                     </div>
                                     <div>
@@ -81,40 +81,40 @@
             <form action="{{ route('user.payment.process') }}" method="POST">
                 @csrf
                 <input type="hidden" name="total_price" value="{{ $total }}">
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="name" class="form-label fw-bold">Họ tên người nhận</label>
-                            <input type="text" name="name" id="name" class="form-control" required 
-                                   placeholder="Nhập họ tên đầy đủ">
+                            <input type="text" name="name" id="name" class="form-control" required
+                                placeholder="Nhập họ tên đầy đủ">
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="phone" class="form-label fw-bold">Số điện thoại</label>
-                            <input type="text" name="phone" id="phone" class="form-control" required 
-                                   placeholder="Nhập số điện thoại">
+                            <input type="text" name="phone" id="phone" class="form-control" required
+                                placeholder="Nhập số điện thoại">
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="address" class="form-label fw-bold">Địa chỉ giao hàng</label>
-                    <textarea name="address" id="address" class="form-control" rows="3" required 
-                              placeholder="Nhập địa chỉ chi tiết"></textarea>
+                    <textarea name="address" id="address" class="form-control" rows="3" required
+                        placeholder="Nhập địa chỉ chi tiết"></textarea>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label fw-bold">💳 Phương thức thanh toán</label>
-                    <div class="row">
+                    <div class="row justify-content-center"> {{-- thêm justify-content-center --}}
                         <div class="col-md-4">
-                            <div class="form-check border rounded p-3 h-100">
-                                <input class="form-check-input" type="radio" name="payment_method" 
-                                       id="cod" value="cod" checked>
+                            <div class="form-check border rounded p-3 h-100 text-start">
+                                <input class="form-check-input" type="radio" name="payment_method"
+                                    id="cod" value="cod" checked>
                                 <label class="form-check-label" for="cod">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-money-bill-wave text-success me-2"></i>
+                                        <i class="fas fa-money-bill-wave text-success me-2 fs-4"></i>
                                         <div>
                                             <strong>Thanh toán khi nhận hàng (COD)</strong>
                                             <br><small class="text-muted">Thanh toán tiền mặt khi nhận hàng</small>
@@ -124,12 +124,12 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-check border rounded p-3 h-100">
-                                <input class="form-check-input" type="radio" name="payment_method" 
-                                       id="momo" value="momo">
+                            <div class="form-check border rounded p-3 h-100 text-start">
+                                <input class="form-check-input" type="radio" name="payment_method"
+                                    id="momo" value="momo">
                                 <label class="form-check-label" for="momo">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-mobile-alt text-danger me-2"></i>
+                                        <i class="fas fa-mobile-alt text-danger me-2 fs-4"></i>
                                         <div>
                                             <strong>Ví MoMo</strong>
                                             <br><small class="text-muted">Thanh toán nhanh chóng qua ví MoMo</small>
@@ -138,10 +138,13 @@
                                 </label>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                </div>
+
+                <!-- <div class="col-md-4">
                             <div class="form-check border rounded p-3 h-100">
-                                <input class="form-check-input" type="radio" name="payment_method" 
-                                       id="bank" value="bank">
+                                <input class="form-check-input" type="radio" name="payment_method"
+                                    id="bank" value="bank">
                                 <label class="form-check-label" for="bank">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-university text-primary me-2"></i>
@@ -153,38 +156,39 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('user.cart.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Quay lại giỏ hàng
-                    </a>
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-check me-2"></i>Xác nhận đặt hàng
-                    </button>
-                </div>
-            </form>
+                    </div> -->
         </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="{{ route('user.cart.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại giỏ hàng
+            </a>
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-check me-2"></i>Xác nhận đặt hàng
+            </button>
+        </div>
+        </form>
     </div>
-    @else
-    <div class="alert alert-info text-center">
-        <i class="fas fa-shopping-cart fa-2x mb-3"></i>
-        <h5>Giỏ hàng của bạn đang trống.</h5>
-        <a href="{{ route('home') }}" class="btn btn-primary mt-2">
-            <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
-        </a>
-    </div>
-    @endif
+</div>
+@else
+<div class="alert alert-info text-center">
+    <i class="fas fa-shopping-cart fa-2x mb-3"></i>
+    <h5>Giỏ hàng của bạn đang trống.</h5>
+    <a href="{{ route('home') }}" class="btn btn-primary mt-2">
+        <i class="fas fa-shopping-bag me-2"></i>Tiếp tục mua sắm
+    </a>
+</div>
+@endif
 </div>
 
 <style>
-.form-check-input:checked + .form-check-label .border {
-    border-color: #198754 !important;
-    background-color: #f8fff9;
-}
-.form-check-input:checked + .form-check-label {
-    color: #198754;
-}
+    .form-check-input:checked+.form-check-label .border {
+        border-color: #198754 !important;
+        background-color: #f8fff9;
+    }
+
+    .form-check-input:checked+.form-check-label {
+        color: #198754;
+    }
 </style>
 @endsection

@@ -63,7 +63,7 @@
 
         .sidebar-divider {
             border-color: rgba(255, 255, 255, 0.15);
-            margin: 0 1rem 1rem;
+            margin: 0 0.5rem 0.5rem;
         }
 
         .sidebar-heading {
@@ -349,6 +349,13 @@
                 <i class="fas fa-users"></i>
                 Người dùng
             </a>
+
+            <a class="nav-link {{ request()->routeIs('admin.messages*') ? 'active' : '' }}"
+                href="{{ route('admin.messages.index') }}">
+                <i class="fas fa-comments"></i>
+                Tin nhắn
+            </a>
+
         </nav>
 
         <hr class="sidebar-divider">

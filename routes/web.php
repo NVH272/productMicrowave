@@ -14,6 +14,12 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ChatController;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +28,10 @@ use App\Http\Controllers\ReviewController;
 */
 
 // Trang chủ (public)
-Route::get('/', [ProductController::class, 'index'])->name('home');
+//Route::get('/', [ProductController::class, 'index'])->name('home');
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
 
 // Public: duyệt sản phẩm & danh mục
 Route::resource('products', ProductController::class)->only(['index', 'show']);
@@ -36,29 +45,52 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.perform');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ---------------- EMAIL VERIFICATION ----------------
+
+// Trang hiển thị yêu cầu verify
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect()->route('home');
-})->middleware(['auth', 'signed'])->name('verification.verify');
+// Link xác thực trong email
+Route::get('/email/verify/{id}/{hash}', function ($id, $hash) {
+    $user = User::findOrFail($id);
 
+    // check hash hợp lệ
+    if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        abort(403, 'Link xác thực không hợp lệ.');
+    }
+
+    // cập nhật email_verified_at nếu chưa có
+    if (is_null($user->email_verified_at)) {
+        $user->forceFill([
+            'email_verified_at' => now(),
+        ])->save();
+    }
+
+    return redirect()->route('login')->with('success', 'Xác thực email thành công, hãy đăng nhập.');
+})->middleware(['signed'])->name('verification.verify');
+
+// Gửi lại email xác thực
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
-    return back()->with('message', 'Verification link sent!');
+
+    return back()->with('message', 'Email xác thực đã được gửi lại!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
+
 // ---------------- USER ROUTES ----------------
-// Yêu cầu user login + verify email
-Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
+// Giỏ hàng - chỉ cần đăng nhập, không cần xác thực email
+Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     // Giỏ hàng
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
     Route::patch('/cart/update/{product}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/cart/remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+});
+
+// Yêu cầu user login + verify email cho các chức năng khác
+Route::middleware(['auth', 'verified'])->prefix('user')->name('user.')->group(function () {
 
     // Thanh toán (OrderController xử lý cả COD & MoMo)
     Route::get('/payment', [OrderController::class, 'index'])->name('payment.index');
@@ -116,6 +148,20 @@ Route::middleware(['auth', 'verified'])->prefix('user')->group(function () {
         ->name('products.reviews.store');
 });
 
+// Wishlist
+Route::middleware('auth')->group(function () {
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/{product}', [WishlistController::class, 'store'])->name('wishlist.store');
+    Route::delete('/wishlist/{product}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+});
+
+// Chat (yêu cầu đăng nhập)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/customer', [ChatController::class, 'index'])->name('chat.customer');
+    Route::post('/chat/send', [ChatController::class, 'send'])->name('chat.send');
+});
+
 // ---------------- ADMIN ROUTES ----------------
 Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
@@ -139,7 +185,7 @@ Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.'
 
     // Đơn hàng (resource)
     Route::resource('orders', AdminOrderController::class);
-    
+
     // Cập nhật trạng thái thanh toán
     Route::patch('/orders/{order}/payment-status', [AdminOrderController::class, 'updatePaymentStatus'])
         ->name('orders.payment-status.update');
@@ -157,4 +203,9 @@ Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.'
     Route::post('/reviews/{review}/reply', [App\Http\Controllers\Admin\ReviewController::class, 'reply'])->name('reviews.reply');
     Route::patch('/reviews/{review}/mark-read', [App\Http\Controllers\Admin\ReviewController::class, 'markAsRead'])->name('reviews.mark-read');
     Route::delete('/reviews/{review}', [App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
+
+    // Quản lý chat
+    Route::get('/messages', [ChatController::class, 'adminIndex'])->name('messages.index');
+    Route::get('/messages/chat/{user}', [ChatController::class, 'adminChat'])->name('messages.chat');
+    Route::post('/messages/send', [ChatController::class, 'adminSend'])->name('messages.send');
 });

@@ -316,7 +316,7 @@ class OrderController extends Controller
         return response()->json(['resultCode' => 0, 'message' => 'Received']);
     }
 
-    // Cho phép user kéo lại đơn chưa thanh toán đi MoMo lần nữa
+    // Cho phép user kéo lại đơn chưa thanh toán hoặc thất bại đi MoMo lần nữa
     public function payAgain(Orders $order)
     {
         if ($order->user_id !== Auth::id()) {
@@ -324,17 +324,25 @@ class OrderController extends Controller
         }
 
         if ($order->payment_status === 'paid') {
-            return redirect()->route('user.orders.index')->with('info', 'Đơn này đã thanh toán.');
+            return redirect()->route('user.orders.index')
+                ->with('info', 'Đơn này đã thanh toán.');
         }
 
-        // Đưa về "chờ thanh toán" trước khi tạo giao dịch mới
+        if (! $order->isMoMo()) {
+            return redirect()->route('user.orders.index')
+                ->with('error', 'Chỉ hỗ trợ thanh toán lại bằng MoMo.');
+        }
+
+        // Nếu đơn thất bại hoặc pending → cho phép thanh toán lại
         $order->update([
-            'status' => 'chờ thanh toán',
-            'payment_status' => 'pending'
+            'status' => 'chờ thanh toán lại MoMo',
+            'payment_status' => 'pending',
+            'transaction_id' => null, // reset transaction cũ
         ]);
 
         return $this->redirectToMoMo($order);
     }
+
 
     // gọi lịch sử các đơn hàng theo người dùng
     public function orderHistory()

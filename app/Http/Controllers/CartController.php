@@ -13,7 +13,7 @@ class CartController extends Controller
     public function index()
     {
         $cart = session()->get('cart', []);
-        
+
         // Lấy lịch sử đơn hàng gần đây (5 đơn hàng mới nhất)
         $recentOrders = [];
         if (Auth::check()) {
@@ -23,28 +23,51 @@ class CartController extends Controller
                 ->limit(5)
                 ->get();
         }
-        
+
         return view('cart.index', compact('cart', 'recentOrders'));
     }
     // Thêm sản phẩm vào giỏ hàng
     public function add(Request $request, Product $product)
     {
+        $quantity = (int) $request->input('quantity', 1);
+
+        // Kiểm tra tồn kho
+        if ($quantity > $product->stock) {
+            return redirect()->back()
+                ->with('error', 'Sản phẩm không đủ số lượng trong kho. Hiện còn: ' . $product->stock);
+        }
+
+        // Lấy giỏ hàng từ session
         $cart = session()->get('cart', []);
+
         if (isset($cart[$product->id])) {
-            $cart[$product->id]['quantity']++;
+            $newQty = $cart[$product->id]['quantity'] + $quantity;
+
+            // Kiểm tra tồn kho khi cộng thêm
+            if ($newQty > $product->stock) {
+                return redirect()->back()
+                    ->with('error', 'Số lượng trong giỏ vượt quá số lượng còn lại. Hiện còn: ' . $product->stock);
+            }
+
+            $cart[$product->id]['quantity'] = $newQty;
         } else {
             $cart[$product->id] = [
-                "id" => $product->id, // Thêm ID sản phẩm
-                "name" => $product->name,
-                "quantity" => 1,
-                "price" => $product->price,
-                "category" => $product->category->name,
-                "image" => $product->image // Thêm hình ảnh sản phẩm
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'quantity' => $quantity,
+                'image' => $product->image,
+                'category' => $product->category ? $product->category->name : 'Chưa phân loại',
             ];
         }
+
+        // Lưu lại giỏ hàng
         session()->put('cart', $cart);
-        return redirect()->route('user.cart.index')->with('success', 'Sản phẩm đã được thêm vào giỏ hàng.');
+
+        // Redirect về trang giỏ hàng thay vì back
+        return redirect()->route('user.cart.index')->with('success', 'Đã thêm sản phẩm vào giỏ!');
     }
+
 
     // Xoá sản phẩm khỏi giỏ hàng
     public function remove(Request $request, Product $product)
@@ -53,11 +76,11 @@ class CartController extends Controller
         if (isset($cart[$product->id])) {
             unset($cart[$product->id]);
             session()->put('cart', $cart);
-            
+
             // Tính tổng tiền toàn bộ giỏ hàng sau khi xóa
             $cartTotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
             $cartCount = count($cart);
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -67,17 +90,17 @@ class CartController extends Controller
                     'product_id' => $product->id
                 ]);
             }
-            
+
             return redirect()->route('user.cart.index')->with('success', 'Sản phẩm đã được xoá khỏi giỏ hàng.');
         }
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Sản phẩm không tồn tại trong giỏ hàng.'
             ], 404);
         }
-        
+
         return redirect()->route('user.cart.index')->with('error', 'Sản phẩm không tồn tại trong giỏ hàng.');
     }
 
@@ -92,13 +115,13 @@ class CartController extends Controller
         if (isset($cart[$product->id])) {
             $cart[$product->id]['quantity'] = $request->quantity;
             session()->put('cart', $cart);
-            
+
             // Tính tổng tiền cho sản phẩm này
             $itemTotal = $cart[$product->id]['price'] * $cart[$product->id]['quantity'];
-            
+
             // Tính tổng tiền toàn bộ giỏ hàng
             $cartTotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -108,17 +131,17 @@ class CartController extends Controller
                     'quantity' => $cart[$product->id]['quantity']
                 ]);
             }
-            
+
             return redirect()->route('user.cart.index')->with('success', 'Số lượng sản phẩm đã được cập nhật.');
         }
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Sản phẩm không tồn tại trong giỏ hàng.'
             ], 404);
         }
-        
+
         return redirect()->route('user.cart.index')->with('error', 'Sản phẩm không tồn tại trong giỏ hàng.');
     }
 
@@ -126,7 +149,7 @@ class CartController extends Controller
     public function clear(Request $request)
     {
         session()->forget('cart');
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
@@ -135,7 +158,7 @@ class CartController extends Controller
                 'cart_total' => '0'
             ]);
         }
-        
+
         return redirect()->route('user.cart.index')->with('success', 'Giỏ hàng đã được xóa.');
     }
 

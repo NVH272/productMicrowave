@@ -174,12 +174,13 @@
                                     @endif
 
                                     <div class="mt-3">
-                                        @if($order->payment_status === 'pending' && $order->payment_method === 'momo')
-                                        <a href="{{ route('user.orders.momo.pay', $order) }}"
+                                        @if($order->isMoMo() && ($order->isFailed() || $order->isPending()))
+                                        <a href="{{ route('user.orders.momo.pay', $order->id) }}"
                                             class="btn btn-warning btn-sm w-100">
-                                            <i class="fas fa-redo me-2"></i>Thanh toán lại MoMo
+                                            🔄 Thanh toán lại MoMo
                                         </a>
                                         @endif
+
 
                                         @if($order->payment_status === 'pending' && $order->payment_method === 'bank')
                                         <div class="alert alert-info p-2 mb-2">
@@ -245,20 +246,22 @@
 
     .shopee-stars .star {
         font-size: 22px;
-        color: #ccc; /* mặc định tối */
+        color: #ccc;
+        /* mặc định tối */
         cursor: pointer;
         transition: color 0.15s ease-in-out;
     }
 
     .shopee-stars .star.active,
     .shopee-stars .star.hovered {
-        color: #f5a623; /* sáng */
+        color: #f5a623;
+        /* sáng */
     }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.review-form').forEach(function (form) {
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.review-form').forEach(function(form) {
             const starsContainer = form.querySelector('.shopee-stars');
             const stars = starsContainer.querySelectorAll('.star');
             const input = form.querySelector('.rating-input');
@@ -277,7 +280,7 @@
             }
 
             stars.forEach(star => {
-                star.addEventListener('mouseenter', function () {
+                star.addEventListener('mouseenter', function() {
                     const hoverValue = parseInt(this.dataset.value, 10);
                     stars.forEach(s => s.classList.remove('hovered'));
                     stars.forEach(s => {
@@ -287,11 +290,11 @@
                     });
                 });
 
-                star.addEventListener('mouseleave', function () {
+                star.addEventListener('mouseleave', function() {
                     stars.forEach(s => s.classList.remove('hovered'));
                 });
 
-                star.addEventListener('click', function () {
+                star.addEventListener('click', function() {
                     selected = parseInt(this.dataset.value, 10);
                     input.value = selected;
                     starsContainer.setAttribute('data-selected', String(selected));
@@ -301,11 +304,11 @@
                 });
             });
 
-            starsContainer.addEventListener('mouseleave', function () {
+            starsContainer.addEventListener('mouseleave', function() {
                 updateVisual();
             });
 
-            form.addEventListener('submit', function (e) {
+            form.addEventListener('submit', function(e) {
                 if (!input.value) {
                     e.preventDefault();
                     alert('Vui lòng chọn số sao để đánh giá.');
@@ -313,6 +316,6 @@
             });
         });
     });
-    </script>
+</script>
 
 @endsection

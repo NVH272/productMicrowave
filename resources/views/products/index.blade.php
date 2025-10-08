@@ -22,6 +22,35 @@
                 <span class="text-muted">Không có ảnh</span>
             </div>
             @endif
+            @auth
+            @php
+            $inWishlist = auth()->user()->wishlist()
+            ->where('product_id', $product->id)
+            ->exists();
+            @endphp
+
+            @if($inWishlist)
+            <!-- Nút xóa khỏi wishlist -->
+            <form action="{{ route('wishlist.destroy', $product->id) }}" method="POST"
+                class="position-absolute top-0 end-0 m-2">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm">
+                    <i class="fas fa-heart text-danger"></i> {{-- trái tim đỏ --}}
+                </button>
+            </form>
+            @else
+            <!-- Nút thêm vào wishlist -->
+            <form action="{{ route('wishlist.store', $product->id) }}" method="POST"
+                class="position-absolute top-0 end-0 m-2">
+                @csrf
+                <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm">
+                    <i class="far fa-heart text-danger"></i> {{-- trái tim viền --}}
+                </button>
+            </form>
+            @endif
+            @endauth
+
         </a>
 
         <div class="card-body text-center d-flex flex-column">
